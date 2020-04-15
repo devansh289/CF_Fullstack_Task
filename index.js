@@ -1,93 +1,7 @@
-/*html = `<html><body><div>Ayeedejndkdednkdejk</div></body></html>`
-
-
-addEventListener('fetch', event => {
-  event.respondWith(handleRequest(event.request))
-})*/
-
 /**
  * Respond with hello worker text
  * @param {Request} request
  */
-
-/*async function handleRequest(request) {
-  return new Response(html, {
-    headers: { 'Content-type': 'text/html' },
-  })
-}*/
-
-
-/*async function handleRequest(request) {
-  console.log("1")
-  //await getURL()
-  console.log("2")
-  const res = await getUserAsync(
-    "devansh289"
-  )
-  const res2 = await res.json()
-  console.log(res)
-  //getUserAsync().then(data => console.log("Edede"));
-  console.log("3")
-  return new Response(res2, {
-    headers: { 'Content-type': 'text/plain' },
-  })
-}
-*/
-/*
-const data = { username: 'example' };
-async function getURL() {
-  fetch('https://cfw-takehome.developers.workers.dev/api/variants', {
-    method: 'GET', // or 'PUT'
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(data),
-  })
-    .then((response) => console.log(response))
-    .then((data) => {
-      console.log('Success:', data);
-    })
-    .catch((error) => {
-      console.error('Error:', error);
-    });
-}*/
-/*
-async function getURL() {
-  console.log("LOL")
-  await fetch('https://httpbin.org/get').then((response) => console.log(response))
-
-
-  async function getUserAsync() {
-    let response = await fetch(`https://httpbin.org/get`);
-    let data = await response.json()
-    return data;
-  }
-
-  getUserAsync('yourUsernameHere')
-    .then(data => console.log("Edede"));
-}*/
-/*
-async function getUserAsync(name) {
-  try {
-    let response = await fetch(`https://api.github.com/users/${name}`);
-    let lol = response.json()
-    console.log(lol)
-    console.log("2112")
-    console.log("Deed")
-    return await response;
-  } catch (err) {
-    console.error(err);
-    console.log("ERRROROROORRO")
-  }
-}*/
-
-
-
-
-
-
-
-
 
 
 addEventListener('fetch', event => {
@@ -95,22 +9,39 @@ addEventListener('fetch', event => {
 })
 
 async function fetchVariants(request) {
+
+  const cookie = request.headers.get('cookie')
   const init = {
     method: 'GET',
     headers: { 'Content-Type': 'text/json' }
   }
+
   const [rawLinks] = await Promise.all([
     fetch('https://cfw-takehome.developers.workers.dev/api/variants', init),
   ])
 
   const urls = await rawLinks.json()
 
-  return generateVariation(urls.variants)
+  return generateVariation(urls.variants, cookie)
 
 }
 
-async function generateVariation(urls) {
-  const group_url = Math.random() < 0.5 ? urls[0] : urls[1]
+
+async function generateVariation(urls, cookie) {
+  let val, group_url;
+
+  if (cookie && cookie.includes(`variant=1`)) {
+    group_url = urls[0]
+    val = 1
+  } else if (cookie && cookie.includes(`variant=2`)) {
+    group_url = urls[1]
+    val = 2
+  } else {
+    val = Math.random() < 0.5 ? 1 : 2
+    group_url = urls[val - 1]
+  }
+
+
 
   const init = {
     method: 'GET',
@@ -122,16 +53,18 @@ async function generateVariation(urls) {
   ])
 
 
-
-  return modifyHTML(variant.body)
+  return modifyHTML(variant.body, val)
 }
 
-async function modifyHTML(textBody) {
-
+async function modifyHTML(textBody, val) {
   const responseInit = {
     status: 200,
     headers: { 'Content-Type': 'text/html' }
   }
+  myCookie = `variant=${val}; Expires=Wed, 21 Oct 2020 07:28:00 GMT; Path='/';`
 
-  return new Response(textBody, responseInit)
+  res = new Response(textBody, responseInit)
+  res.headers.set('Set-Cookie', myCookie)
+
+  return res
 }
