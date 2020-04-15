@@ -1,0 +1,6 @@
+name = "fullstack_task"
+type = "javascript"
+account_id = "5391df35d6d669643f5bc07b3cfcc10b"
+workers_dev = true
+route = ""
+zone_id = "" 
