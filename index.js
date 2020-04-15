@@ -9,20 +9,25 @@ addEventListener('fetch', event => {
 })
 
 
+
 // Function to fetch the two possible redirection URLs
 async function fetchVariants(request) {
 
-  //Retrieve cookie 
+  //Retrieves Cookie if previously saved
   const cookie = request.headers.get('cookie')
+
+  //Setup for additional response parameters
   const init = {
     method: 'GET',
     headers: { 'Content-Type': 'text/json' }
   }
 
+  //Gets the 2 URLS at the 'api/variants'
   const [rawLinks] = await Promise.all([
     fetch('https://cfw-takehome.developers.workers.dev/api/variants', init),
   ])
 
+  //Converts JSON to Array
   const urls = await rawLinks.json()
 
   return generateVariation(urls.variants, cookie)
@@ -30,9 +35,11 @@ async function fetchVariants(request) {
 }
 
 
+//Function to generate the new random URL or one present in the Cookie
 async function generateVariation(urls, cookie) {
   let val, group_url;
 
+  //Redirect to original pages if Cookie present
   if (cookie && cookie.includes(`variant=1`)) {
     group_url = urls[0]
     val = 1
@@ -40,65 +47,60 @@ async function generateVariation(urls, cookie) {
     group_url = urls[1]
     val = 2
   } else {
+    //Generate new random page is no Cookie present
     val = Math.random() < 0.5 ? 1 : 2
     group_url = urls[val - 1]
   }
 
 
-
+  //Setup for additional response parameters
   const init = {
     method: 'GET',
     headers: { 'Content-Type': 'text/html' }
   }
 
+  //Fetch one of the variants
   const [variant] = await Promise.all([
     fetch(group_url, init),
   ])
 
-
-  return modifyHTML(variant.body, val, variant)
+  return modifyHTML(val, variant)
 }
 
-async function modifyHTML(textBody, val, variant) {
+async function modifyHTML(val, variant) {
+
+  //Setup for additional response parameters
   const responseInit = {
     status: 200,
     headers: { 'Content-Type': 'text/html' }
   }
 
-
+  //Handlers for HTMLRewritter
   class titleHandler {
     element(e) {
       e.prepend("Welcome to ");
     }
   }
 
-  /**
-   * Element handler to handle title of card
-   */
   class headingHandler {
     element(e) {
       e.prepend("You are viewing ");
     }
   }
 
-  /**
-   * Element handler to handle description
-   */
   class textHandler {
     element(e) {
       e.setInnerContent('Hey, My name is Devansh, and this is my Cloudflare 2020 Summer Internship Application! This web application includes all the basic funtionality as well as the bonus features!');
     }
   }
 
-  /**
-   * Element handler to handle link
-   */
   class linkHandler {
     element(e) {
       e.setAttribute('href', 'http://devansh.site/');
       e.setInnerContent('Check out my Portfolio');
     }
   }
+
   let rewriter = new HTMLRewriter()
     .on('title', new titleHandler())
     .on('h1#title', new headingHandler())
@@ -106,8 +108,10 @@ async function modifyHTML(textBody, val, variant) {
     .on('a#url', new linkHandler());
 
 
+  //Preforms the HTMLRewriter operation
   let res = new Response(rewriter.transform(variant).body, responseInit);
 
+  //Sends the cookie back in the response
   myCookie = `variant=${val}; Expires=Wed, 21 Oct 2020 07:28:00 GMT; Path='/';`
   res.headers.set('Set-Cookie', myCookie)
 
