@@ -121,9 +121,17 @@ async function generateVariation(urls) {
     fetch(group_url, init),
   ])
 
+
+
+  return modifyHTML(variant.body)
+}
+
+async function modifyHTML(textBody) {
+
   const responseInit = {
     status: 200,
     headers: { 'Content-Type': 'text/html' }
   }
-  return new Response(variant.body, responseInit)
+
+  return new Response(textBody, responseInit)
 }
