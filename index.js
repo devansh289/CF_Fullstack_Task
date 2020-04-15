@@ -96,8 +96,8 @@ async function modifyHTML(val, variant) {
 
   class linkHandler {
     element(e) {
-      e.setAttribute('href', 'http://devansh.site/');
-      e.setInnerContent('Check out my Portfolio');
+      e.setAttribute('href', 'https://www.linkedin.com/in/devansh-sharma-01/');
+      e.setInnerContent('Check out my LinkedIn');
     }
   }
 
