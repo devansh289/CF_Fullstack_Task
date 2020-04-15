@@ -91,37 +91,35 @@ async function getUserAsync(name) {
 
 
 addEventListener('fetch', event => {
-  event.respondWith(fetchVarients(event.request))
+  event.respondWith(fetchVariants(event.request))
 })
 
-async function fetchVarients(request) {
+async function fetchVariants(request) {
   const init = {
     method: 'GET',
     headers: { 'Content-Type': 'text/json' }
   }
-  const [raw_links] = await Promise.all([
+  const [rawLinks] = await Promise.all([
     fetch('https://cfw-takehome.developers.workers.dev/api/variants', init),
   ])
 
-  const links = await raw_links.json()
-  const redirect_link = links.variants
+  const urls = await rawLinks.json()
 
-  return generateVariation(redirect_link)
+  return generateVariation(urls.variants)
 
 }
 
 async function generateVariation(urls) {
-  const group = Math.random() < 0.5 ? urls[0] : urls[1]
+  const group_url = Math.random() < 0.5 ? urls[0] : urls[1]
 
   const init = {
     method: 'GET',
     headers: { 'Content-Type': 'text/html' }
   }
 
-  const [variant_raw] = await Promise.all([
-    fetch(group, init),
+  const [variant] = await Promise.all([
+    fetch(group_url, init),
   ])
-  variant = await variant_raw
 
   const responseInit = {
     status: 200,
